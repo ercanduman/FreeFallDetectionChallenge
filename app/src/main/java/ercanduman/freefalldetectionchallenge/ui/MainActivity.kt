@@ -18,16 +18,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
-    private lateinit var sensor: Sensor
     private var lastShakeTime = 0L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         lastShakeTime = System.currentTimeMillis()
 
         initFab()
@@ -44,7 +43,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun registerSensor() {
         logd("registerSensor() - called.")
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+
+        /**
+         * the sensor reporting delay is small enough such that
+         * the application receives an update before the system checks the sensor
+         * readings again.
+         */
+        val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        if (accelerometerSensor != null) {
+            sensorManager.registerListener(
+                this,
+                accelerometerSensor,
+                SensorManager.SENSOR_DELAY_NORMAL,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
+
+        val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        if (movementSensor != null) {
+            sensorManager.registerListener(
+                this,
+                accelerometerSensor,
+                SensorManager.SENSOR_DELAY_NORMAL,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
     }
 
     private fun unRegisterSensor() {
@@ -59,25 +82,39 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         // logd("onSensorChanged() - called.")
 
-        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            // logd("Accelerometer sensors triggered.")
-
-            val currentTime = System.currentTimeMillis()
-            if ((currentTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES) {
-                val x = event.values[0]
-                val y = event.values[1]
-                val z = event.values[2]
-
-                val accelerationReader =
-                    sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
-                logd("Acceleration is " + accelerationReader + "m/s^2")
-
-                if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
-                    logd("Fall Detected...")
-                    lastShakeTime = currentTime
-                } // else logd("Not fall...")
-            }
+        when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> handleAccelerometerEvent(event)
+            Sensor.TYPE_ROTATION_VECTOR -> handleRotationEvent(event)
+            Sensor.TYPE_SIGNIFICANT_MOTION -> handleMotionEvent(event)
+            // can handle proper sensor events below...
         }
+    }
+
+    private fun handleAccelerometerEvent(event: SensorEvent) {
+        logd("handleAccelerometerEvent() - called.")
+        val currentTime = System.currentTimeMillis()
+        if ((currentTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            val accelerationReader =
+                sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
+            logd("Acceleration is " + accelerationReader + "m/s^2")
+
+            if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
+                logd("Fall Detected...")
+                lastShakeTime = currentTime
+            } // else logd("Not fall detected...")
+        } else logd("Shake detected...")
+    }
+
+    private fun handleMotionEvent(event: SensorEvent) {
+        logd("handleMotionEvent() - called.")
+    }
+
+    private fun handleRotationEvent(event: SensorEvent) {
+        logd("handleRotationEvent() - called.")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
