@@ -10,23 +10,25 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import ercanduman.freefalldetectionchallenge.MIN_TIME_BETWEEN_SHAKES
 import ercanduman.freefalldetectionchallenge.R
+import ercanduman.freefalldetectionchallenge.SHAKE_THRESHOLD_FOR_FREE_FALL
 import ercanduman.freefalldetectionchallenge.utils.logd
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.DecimalFormat
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private lateinit var sensor: Sensor
-
+    private var lastShakeTime = 0L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        lastShakeTime = System.currentTimeMillis()
 
         initFab()
     }
@@ -55,24 +57,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-//        logd("onSensorChanged() - called.")
+        // logd("onSensorChanged() - called.")
 
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-//            logd("Accelerometer sensors triggered.")
+            // logd("Accelerometer sensors triggered.")
 
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
+            val currentTime = System.currentTimeMillis()
+            if ((currentTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES) {
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
 
-            val accelerationReader =
-                sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0))
-            val precision = DecimalFormat("0.00")
-            val round = precision.format(accelerationReader).toDouble()
+                val accelerationReader =
+                    sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
+                logd("Acceleration is " + accelerationReader + "m/s^2")
 
-            if (round > 0.3 && round < 0.5) {
-                logd("Fall Detected...")
-            } else {
-                logd("Not fall...")
+                if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
+                    logd("Fall Detected...")
+                    lastShakeTime = currentTime
+                } // else logd("Not fall...")
             }
         }
     }
