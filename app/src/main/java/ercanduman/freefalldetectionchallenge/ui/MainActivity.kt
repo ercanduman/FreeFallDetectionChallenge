@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import ercanduman.freefalldetectionchallenge.*
 import ercanduman.freefalldetectionchallenge.service.ForegroundService
@@ -58,9 +59,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         notificationManager?.createNotificationChannel(notificationChannel)
     }
 
-    override fun onStop() {
-        super.onStop()
-        if (isSensorListeningStarted) startService(Intent(this, ForegroundService::class.java))
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isSensorListeningStarted) {
+            /**
+             * For Api level 26 (O) should call startForegroundService() and for Pre-O startService().
+             * ContextCompat.startForegroundService() handles this check internally.
+             */
+            ContextCompat.startForegroundService(this, Intent(this, ForegroundService::class.java))
+        }
     }
 
     private fun initFab() {
