@@ -1,15 +1,18 @@
 package ercanduman.freefalldetectionchallenge.service
 
-import android.app.Notification
-import android.app.PendingIntent
-import android.app.Service
+import android.annotation.TargetApi
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import ercanduman.freefalldetectionchallenge.NOTIFICATION_CHANNEL_ID
+import ercanduman.freefalldetectionchallenge.NOTIFICATION_CHANNEL_NAME
 import ercanduman.freefalldetectionchallenge.NOTIFICATION_ID
 import ercanduman.freefalldetectionchallenge.R
 import ercanduman.freefalldetectionchallenge.ui.MainActivity
@@ -17,12 +20,36 @@ import ercanduman.freefalldetectionchallenge.utils.logd
 
 class ForegroundService : Service(), SensorEventListener {
     private lateinit var notification: Notification
+    private lateinit var sensorManager: SensorManager
+    private var lastShakeTime = 0L
 
     // called first time service created, called only once
     override fun onCreate() {
-        logd("onCreate() - called.")
         super.onCreate()
+        logd("ForegroundService.onCreate() - called.")
+        lastShakeTime = System.currentTimeMillis()
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        /**
+         * If api level is higher than Oreo (26) then a notification should be displayed
+         * to user otherwise system will kill/stop service around 1 min
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
         createNotification()
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel() {
+        val notificationChannel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager?.createNotificationChannel(notificationChannel)
     }
 
     private fun createNotification() {
@@ -53,6 +80,7 @@ class ForegroundService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         logd("onSensorChanged() - called.")
+
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
