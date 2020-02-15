@@ -1,18 +1,22 @@
 package ercanduman.freefalldetectionchallenge.ui
 
+import android.annotation.TargetApi
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import ercanduman.freefalldetectionchallenge.MIN_TIME_BETWEEN_SHAKES
-import ercanduman.freefalldetectionchallenge.R
-import ercanduman.freefalldetectionchallenge.SHAKE_THRESHOLD_FOR_FREE_FALL
+import ercanduman.freefalldetectionchallenge.*
+import ercanduman.freefalldetectionchallenge.service.ForegroundService
 import ercanduman.freefalldetectionchallenge.utils.logd
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.pow
@@ -21,6 +25,7 @@ import kotlin.math.sqrt
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var lastShakeTime = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,6 +35,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         lastShakeTime = System.currentTimeMillis()
 
         initFab()
+
+        /**
+         * If api level is higher than Oreo (26) then a notification should be displayed
+         * to user otherwise system will kill/stop service around 1 min
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel() {
+        val notificationChannel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager?.createNotificationChannel(notificationChannel)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        startService(Intent(this, ForegroundService::class.java))
     }
 
     private fun initFab() {
@@ -124,6 +154,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         return when (item.itemId) {
             R.id.action_settings -> {
                 unRegisterSensor()
+                stopService(Intent(this, ForegroundService::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
