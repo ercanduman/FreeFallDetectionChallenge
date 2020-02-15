@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         lastShakeTime = System.currentTimeMillis()
 
@@ -44,30 +45,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun registerSensor() {
         logd("registerSensor() - called.")
 
+        val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        if (accelerometerSensor != null) registerSensorListener(accelerometerSensor)
+
+        val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        if (movementSensor != null) registerSensorListener(movementSensor)
+
+
+        val significantMotionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
+        if (significantMotionSensor != null) registerSensorListener(significantMotionSensor)
+    }
+
+    private fun registerSensorListener(sensor: Sensor?) {
+        logd("registerSensorListener() - called.")
+
         /**
          * the sensor reporting delay is small enough such that
          * the application receives an update before the system checks the sensor
          * readings again.
          */
-        val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        if (accelerometerSensor != null) {
-            sensorManager.registerListener(
-                this,
-                accelerometerSensor,
-                SensorManager.SENSOR_DELAY_NORMAL,
-                SensorManager.SENSOR_DELAY_UI
-            )
-        }
-
-        val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        if (movementSensor != null) {
-            sensorManager.registerListener(
-                this,
-                accelerometerSensor,
-                SensorManager.SENSOR_DELAY_NORMAL,
-                SensorManager.SENSOR_DELAY_UI
-            )
-        }
+        sensorManager.registerListener(
+            this,
+            sensor,
+            SensorManager.SENSOR_DELAY_NORMAL,
+            SensorManager.SENSOR_DELAY_UI
+        )
     }
 
     private fun unRegisterSensor() {
@@ -105,16 +107,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
                 logd("Fall Detected...")
                 lastShakeTime = currentTime
+
+                val duration = currentTime - System.currentTimeMillis()
+                logd("duration: $duration")
+
             } // else logd("Not fall detected...")
         } else logd("Shake detected...")
     }
 
     private fun handleMotionEvent(event: SensorEvent) {
         logd("handleMotionEvent() - called.")
+        logd("event: ${event.sensor.name}")
     }
 
     private fun handleRotationEvent(event: SensorEvent) {
         logd("handleRotationEvent() - called.")
+        logd("event: ${event.sensor.name}")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
