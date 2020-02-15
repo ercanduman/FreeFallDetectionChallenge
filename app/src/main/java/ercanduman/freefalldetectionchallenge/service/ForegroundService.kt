@@ -35,7 +35,7 @@ class ForegroundService : Service(), SensorEventListener {
         notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Challenge App")
             .setContentText("Sensors listening...")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentIntent(pendingIntent)
             .build()
     }

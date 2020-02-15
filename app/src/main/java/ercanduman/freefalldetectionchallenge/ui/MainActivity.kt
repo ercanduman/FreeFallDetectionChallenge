@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var lastShakeTime = 0L
 
+    private var isSensorListeningStarted = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onStop() {
         super.onStop()
-        startService(Intent(this, ForegroundService::class.java))
+        if (isSensorListeningStarted) startService(Intent(this, ForegroundService::class.java))
     }
 
     private fun initFab() {
@@ -67,19 +68,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         fab.setOnClickListener { view ->
             Snackbar.make(
                 view, getString(R.string.main_sensor_listening_question), Snackbar.LENGTH_LONG
-            ).setAction(android.R.string.yes) { registerSensor() }.show()
+            ).setAction(android.R.string.yes) { startSensorListening() }.show()
         }
     }
 
-    private fun registerSensor() {
-        logd("registerSensor() - called.")
-
+    private fun startSensorListening() {
+        logd("startSensorListening() - called.")
+        isSensorListeningStarted = true
         val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         if (accelerometerSensor != null) registerSensorListener(accelerometerSensor)
 
         val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         if (movementSensor != null) registerSensorListener(movementSensor)
     }
+
+    private fun stopSensorListening() {
+        logd("stopSensorListening() - called.")
+        isSensorListeningStarted = false
+        unRegisterSensor()
+        stopService(Intent(this, ForegroundService::class.java))
+    }
+
 
     private fun registerSensorListener(sensor: Sensor?) {
         logd("registerSensorListener() - called.")
@@ -153,8 +162,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                unRegisterSensor()
-                stopService(Intent(this, ForegroundService::class.java))
+                stopSensorListening()
                 true
             }
             else -> super.onOptionsItemSelected(item)
