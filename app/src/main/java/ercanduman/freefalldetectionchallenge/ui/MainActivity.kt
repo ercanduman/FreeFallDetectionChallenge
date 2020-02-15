@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var lastShakeTime = 0L
@@ -50,10 +49,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         if (movementSensor != null) registerSensorListener(movementSensor)
-
-
-        val significantMotionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
-        if (significantMotionSensor != null) registerSensorListener(significantMotionSensor)
     }
 
     private fun registerSensorListener(sensor: Sensor?) {
@@ -87,8 +82,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         when (event.sensor.type) {
             Sensor.TYPE_ACCELEROMETER -> handleAccelerometerEvent(event)
             Sensor.TYPE_ROTATION_VECTOR -> handleRotationEvent(event)
-            Sensor.TYPE_SIGNIFICANT_MOTION -> handleMotionEvent(event)
-            // can handle proper sensor events below...
+            // can handle more sensor events...
+            else -> logd("Other type of sensor event triggered...")
         }
     }
 
@@ -108,16 +103,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 logd("Fall Detected...")
                 lastShakeTime = currentTime
 
-                val duration = currentTime - System.currentTimeMillis()
-                logd("duration: $duration")
+                val duration = System.currentTimeMillis() - currentTime
+                logd("duration of fall: $duration ms")
 
             } // else logd("Not fall detected...")
         } else logd("Shake detected...")
-    }
-
-    private fun handleMotionEvent(event: SensorEvent) {
-        logd("handleMotionEvent() - called.")
-        logd("event: ${event.sensor.name}")
     }
 
     private fun handleRotationEvent(event: SensorEvent) {
