@@ -11,12 +11,11 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import ercanduman.freefalldetectionchallenge.NOTIFICATION_CHANNEL_ID
-import ercanduman.freefalldetectionchallenge.NOTIFICATION_CHANNEL_NAME
-import ercanduman.freefalldetectionchallenge.NOTIFICATION_ID
-import ercanduman.freefalldetectionchallenge.R
+import ercanduman.freefalldetectionchallenge.*
 import ercanduman.freefalldetectionchallenge.ui.MainActivity
 import ercanduman.freefalldetectionchallenge.utils.logd
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class ForegroundService : Service(), SensorEventListener {
     private lateinit var notification: Notification
@@ -74,13 +73,66 @@ class ForegroundService : Service(), SensorEventListener {
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logd("onStartCommand() - called.")
+        startSensorListening()
         startForeground(NOTIFICATION_ID, notification)
         return START_NOT_STICKY
     }
 
-    override fun onSensorChanged(event: SensorEvent?) {
-        logd("onSensorChanged() - called.")
+    private fun startSensorListening() {
+        logd("startSensorListening() - called.")
+        val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        registerSensor(accelerometerSensor)
 
+        val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        registerSensor(movementSensor)
+    }
+
+    private fun registerSensor(sensor: Sensor) {
+        logd("registerSensor() - called.")
+        sensorManager.registerListener(
+            this,
+            sensor,
+            SensorManager.SENSOR_DELAY_NORMAL,
+            SensorManager.SENSOR_DELAY_UI
+        )
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        // logd("onSensorChanged() - called.")
+        when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> handleAccelerometerEvent(event)
+            Sensor.TYPE_ROTATION_VECTOR -> handleRotationEvent(event)
+            // can handle more sensor events...
+            else -> logd("Other type of sensor event triggered...")
+        }
+    }
+
+    private fun handleAccelerometerEvent(event: SensorEvent) {
+        // logd("handleAccelerometerEvent() - called.")
+        val currentTime = System.currentTimeMillis()
+        if ((currentTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            val accelerationReader =
+                sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
+            // logd("Acceleration is " + accelerationReader + "m/s^2")
+
+            if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
+                logd("Fall Detected...")
+                lastShakeTime = currentTime
+
+                val duration = System.currentTimeMillis() - currentTime
+                logd("duration of fall: $duration ms")
+
+            } // else logd("Not fall detected...")
+        }
+    }
+
+    private fun handleRotationEvent(event: SensorEvent) {
+        // logd("handleRotationEvent() - called.")
+        // logd("event: ${event.sensor.name}")
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -88,5 +140,11 @@ class ForegroundService : Service(), SensorEventListener {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        logd("onDestroy() - called.")
+        sensorManager.unregisterListener(this)
     }
 }

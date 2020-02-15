@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun handleAccelerometerEvent(event: SensorEvent) {
-        logd("handleAccelerometerEvent() - called.")
+        // logd("handleAccelerometerEvent() - called.")
         val currentTime = System.currentTimeMillis()
         if ((currentTime - lastShakeTime) > MIN_TIME_BETWEEN_SHAKES) {
             val x = event.values[0]
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             val accelerationReader =
                 sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
-            logd("Acceleration is " + accelerationReader + "m/s^2")
+            // logd("Acceleration is " + accelerationReader + "m/s^2")
 
             if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
                 logd("Fall Detected...")
@@ -123,8 +123,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun handleRotationEvent(event: SensorEvent) {
-        logd("handleRotationEvent() - called.")
-        logd("event: ${event.sensor.name}")
+        // logd("handleRotationEvent() - called.")
+        // logd("event: ${event.sensor.name}")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
