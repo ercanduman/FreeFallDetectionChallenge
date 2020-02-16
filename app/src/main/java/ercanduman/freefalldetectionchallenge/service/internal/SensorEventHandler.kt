@@ -31,10 +31,10 @@ class SensorEventHandler(
     fun startSensorListening() {
         logd("startSensorListening() - called.")
         val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        registerSensor(accelerometerSensor)
+        if (accelerometerSensor != null) registerSensor(accelerometerSensor)
 
         val movementSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        registerSensor(movementSensor)
+        if (movementSensor != null) registerSensor(movementSensor)
     }
 
     private fun registerSensor(sensor: Sensor) {
