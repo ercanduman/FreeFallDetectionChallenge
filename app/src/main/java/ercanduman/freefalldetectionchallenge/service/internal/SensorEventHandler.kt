@@ -8,6 +8,7 @@ import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_HIGHEST
 import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_LOWEST
 import ercanduman.freefalldetectionchallenge.MIN_TIME_BETWEEN_SHAKES
 import ercanduman.freefalldetectionchallenge.utils.logd
+import java.sql.Timestamp
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -28,7 +29,7 @@ class SensorEventHandler(private val sensorManager: SensorManager) : SensorEvent
     }
 
     private fun registerSensor(sensor: Sensor) {
-        logd("registerSensor() - called.")
+        // logd("registerSensor() - called.")
         sensorManager.registerListener(
             this,
             sensor,
@@ -63,8 +64,10 @@ class SensorEventHandler(private val sensorManager: SensorManager) : SensorEvent
                 lastShakeTime = currentTime
 
                 val duration = System.currentTimeMillis() - lastShakeTime
-                logd("duration of fall: $duration ms")
+                logd("Duration of fall: $duration ms")
 
+                val currentTimestamp = Timestamp(System.currentTimeMillis())
+                logd("Current timestamp: $currentTimestamp")
             } // else logd("Not fall detected...")
         } else logd("Shake detected...")
     }

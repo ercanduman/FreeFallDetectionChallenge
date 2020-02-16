@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopSensorListening() {
         logd("stopSensorListening() - called.")
         isSensorListeningStarted = false
+        sensorEventHandler.finish()
         stopService(Intent(this, ForegroundService::class.java))
     }
 
