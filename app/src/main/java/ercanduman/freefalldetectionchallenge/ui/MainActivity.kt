@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity(), ContentWriter {
         setSupportActionBar(toolbar)
 
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorEventHandler = SensorEventHandler(sensorManager, this)
+        sensorEventHandler = SensorEventHandler(this, sensorManager, this)
 
         initFab()
     }

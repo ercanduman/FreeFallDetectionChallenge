@@ -1,5 +1,7 @@
 package ercanduman.freefalldetectionchallenge.service.internal
 
+import android.app.NotificationManager
+import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -7,13 +9,16 @@ import android.hardware.SensorManager
 import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_HIGHEST
 import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_LOWEST
 import ercanduman.freefalldetectionchallenge.MIN_TIME_BETWEEN_SHAKES
+import ercanduman.freefalldetectionchallenge.NOTIFICATION_ID
 import ercanduman.freefalldetectionchallenge.data.entities.FreeFall
+import ercanduman.freefalldetectionchallenge.utils.createNotification
 import ercanduman.freefalldetectionchallenge.utils.logd
 import java.sql.Timestamp
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class SensorEventHandler(
+    private val context: Context,
     private val sensorManager: SensorManager,
     private val contentWriter: ContentWriter?
 ) : SensorEventListener {
@@ -65,6 +70,7 @@ class SensorEventHandler(
              */
             if (acceleration in FREE_FALL_RANGE_LOWEST..FREE_FALL_RANGE_HIGHEST) {
                 logd("Fall Detected...")
+                showNotification()
                 val timestamp = Timestamp(System.currentTimeMillis())
                 // logd("Current timestamp: $timestamp")
 
@@ -79,6 +85,15 @@ class SensorEventHandler(
 
             } // else logd("Not fall detected...")
         } else logd("Shake detected...")
+    }
+
+    private fun showNotification() {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(
+            NOTIFICATION_ID,
+            createNotification(context, "Free fall detected!")
+        )
     }
 
     private fun handleRotationEvent(event: SensorEvent) {
