@@ -7,6 +7,7 @@ import android.hardware.SensorManager
 import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_HIGHEST
 import ercanduman.freefalldetectionchallenge.FREE_FALL_RANGE_LOWEST
 import ercanduman.freefalldetectionchallenge.MIN_TIME_BETWEEN_SHAKES
+import ercanduman.freefalldetectionchallenge.data.entities.FreeFall
 import ercanduman.freefalldetectionchallenge.utils.logd
 import java.sql.Timestamp
 import kotlin.math.pow
@@ -64,14 +65,16 @@ class SensorEventHandler(
              */
             if (acceleration in FREE_FALL_RANGE_LOWEST..FREE_FALL_RANGE_HIGHEST) {
                 logd("Fall Detected...")
+                val timestamp = Timestamp(System.currentTimeMillis())
+                // logd("Current timestamp: $timestamp")
 
-                val currentTimestamp = Timestamp(System.currentTimeMillis())
-                logd("Current timestamp: $currentTimestamp")
+                val duration = System.currentTimeMillis().minus(currentTime)
+                // logd("Duration of fall: $duration ms")
 
-                val duration = System.currentTimeMillis() - currentTime
-                logd("Duration of fall: $duration ms")
+                val freeFall = FreeFall(timestamp, duration)
+                logd("freeFall: $freeFall")
 
-                contentWriter?.content(currentTimestamp.toString())
+                contentWriter?.content(freeFall)
                 lastShakeTime = currentTime
 
             } // else logd("Not fall detected...")

@@ -2,5 +2,5 @@
     <string name="app_name">Free Fall Detection Challenge</string>
     <string name="main_sensor_listening_question">Start to listen sensor events?</string>
     <string name="action_stop_sensor_listening">Stop sensor listening</string>
-    <string name="main_content_message">Free Fall:</string>
+    <string name="main_content_message">Free Falls: \n</string>
 </resources>

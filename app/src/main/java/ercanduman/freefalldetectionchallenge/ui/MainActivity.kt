@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import ercanduman.freefalldetectionchallenge.R
+import ercanduman.freefalldetectionchallenge.data.entities.FreeFall
 import ercanduman.freefalldetectionchallenge.service.ForegroundService
 import ercanduman.freefalldetectionchallenge.service.internal.ContentWriter
 import ercanduman.freefalldetectionchallenge.service.internal.SensorEventHandler
@@ -31,8 +32,8 @@ class MainActivity : AppCompatActivity(), ContentWriter {
         initFab()
     }
 
-    override fun content(message: String) {
-        main_tv_content.append("\n$message")
+    override fun content(freeFall: FreeFall) {
+        main_tv_content.append("\n $freeFall")
     }
 
     private fun initFab() {
