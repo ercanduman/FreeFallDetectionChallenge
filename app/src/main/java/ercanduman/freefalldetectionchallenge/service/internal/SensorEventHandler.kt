@@ -12,7 +12,10 @@ import java.sql.Timestamp
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class SensorEventHandler(private val sensorManager: SensorManager) : SensorEventListener {
+class SensorEventHandler(
+    private val sensorManager: SensorManager,
+    private val contentWriter: ContentWriter?
+) : SensorEventListener {
     private var lastShakeTime = 0L
 
     init {
@@ -61,13 +64,16 @@ class SensorEventHandler(private val sensorManager: SensorManager) : SensorEvent
              */
             if (acceleration in FREE_FALL_RANGE_LOWEST..FREE_FALL_RANGE_HIGHEST) {
                 logd("Fall Detected...")
-                lastShakeTime = currentTime
-
-                val duration = System.currentTimeMillis() - lastShakeTime
-                logd("Duration of fall: $duration ms")
 
                 val currentTimestamp = Timestamp(System.currentTimeMillis())
                 logd("Current timestamp: $currentTimestamp")
+
+                val duration = System.currentTimeMillis() - currentTime
+                logd("Duration of fall: $duration ms")
+
+                contentWriter?.content(currentTimestamp.toString())
+                lastShakeTime = currentTime
+
             } // else logd("Not fall detected...")
         } else logd("Shake detected...")
     }

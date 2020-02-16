@@ -11,11 +11,13 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import ercanduman.freefalldetectionchallenge.R
 import ercanduman.freefalldetectionchallenge.service.ForegroundService
+import ercanduman.freefalldetectionchallenge.service.internal.ContentWriter
 import ercanduman.freefalldetectionchallenge.service.internal.SensorEventHandler
 import ercanduman.freefalldetectionchallenge.utils.logd
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ContentWriter {
     private var isSensorListeningStarted = false
     private lateinit var sensorEventHandler: SensorEventHandler
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,9 +26,13 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorEventHandler = SensorEventHandler(sensorManager)
+        sensorEventHandler = SensorEventHandler(sensorManager, this)
 
         initFab()
+    }
+
+    override fun content(message: String) {
+        main_tv_content.append("\n$message")
     }
 
     private fun initFab() {

@@ -27,7 +27,7 @@ class ForegroundService : Service() {
         super.onCreate()
         logd("ForegroundService.onCreate() - called.")
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorEventHandler = SensorEventHandler(sensorManager)
+        sensorEventHandler = SensorEventHandler(sensorManager, null)
 
         /**
          * If api level is higher than Oreo (26) then a notification should be displayed
