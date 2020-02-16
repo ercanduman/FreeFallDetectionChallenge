@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity(), ContentWriter {
     }
 
     override fun content(freeFall: FreeFall) {
-        main_tv_content.append("\n $freeFall")
+        main_tv_content.append("\n $freeFall\n")
     }
 
     private fun initFab() {
