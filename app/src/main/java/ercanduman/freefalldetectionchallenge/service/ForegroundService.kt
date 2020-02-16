@@ -115,19 +115,28 @@ class ForegroundService : Service(), SensorEventListener {
             val y = event.values[1]
             val z = event.values[2]
 
-            val accelerationReader =
-                sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0)) - SensorManager.GRAVITY_EARTH
+            /**
+             * Free fall algorithms:
+             * 1- https://www.hackster.io/RVLAD/free-fall-detection-using-3-axis-accelerometer-06383e
+             * 2- https://stackoverflow.com/questions/36540058/can-anyone-tell-me-how-i-get-toast-when-mobile-falls-down
+             */
+            val acceleration = sqrt(x.toDouble().pow(2) + y.toDouble().pow(2) + z.toDouble().pow(2))
+            // sqrt(x.toDouble().pow(2) + y.toDouble().pow(2) + z.toDouble().pow(2)) - SensorManager.GRAVITY_EARTH
             // logd("Acceleration is " + accelerationReader + "m/s^2")
 
-            if (accelerationReader > SHAKE_THRESHOLD_FOR_FREE_FALL) {
+            /**
+             *  The total acceleration value during free fall were in the range of 25-45
+             *  and the acceleration during free fall will drop below value 50 (FREE_FALL_RANGE_HIGHEST).
+             */
+            if (acceleration in FREE_FALL_RANGE_LOWEST..FREE_FALL_RANGE_HIGHEST) {
                 logd("Fall Detected...")
                 lastShakeTime = currentTime
 
-                val duration = System.currentTimeMillis() - currentTime
+                val duration = System.currentTimeMillis() - lastShakeTime
                 logd("duration of fall: $duration ms")
 
             } // else logd("Not fall detected...")
-        }
+        } else logd("Shake detected...")
     }
 
     private fun handleRotationEvent(event: SensorEvent) {

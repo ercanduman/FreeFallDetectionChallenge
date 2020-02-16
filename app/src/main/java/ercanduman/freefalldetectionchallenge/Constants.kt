@@ -4,7 +4,8 @@ package ercanduman.freefalldetectionchallenge
  * Sensor related constants
  */
 const val MIN_TIME_BETWEEN_SHAKES = 1000
-const val SHAKE_THRESHOLD_FOR_FREE_FALL = 15.00f
+const val FREE_FALL_RANGE_HIGHEST = 50.00f
+const val FREE_FALL_RANGE_LOWEST = 23.00f
 
 /**
  * Service related constants
