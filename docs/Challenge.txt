@@ -1,0 +1,19 @@
+# Android Engineer - Challenge (Free Fall Detection)
+
+## Specification
+
+* Create an Android library that detects a free fall of the device. In particular, the program should be able to differentiate a free fall from other kinds of device motion, like shaking, rotating, and moving.
+* The detection should also work while no user interface is in the foreground.
+* The app should display a list of detected free falls (duration and timestamp).
+
+## Bonus tasks
+
+* When a free fall ends, the library should store the event with its duration in a database of your choice.
+* When a free fall ends, the library should display a notification.
+* The library should provide a method to retrieve a list of all stored events.
+
+## Other considerations
+
+Feel free to use Java and / or Kotlin to implement the specification.
+
+Please document your solution and either upload it to GitHub.
